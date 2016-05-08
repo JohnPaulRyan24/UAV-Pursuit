@@ -35,6 +35,7 @@ if(True):
     #This converts the h264 ti mp4
     subprocess.call("ffmpeg -loglevel panic -y -i "+str(counter)+"temp.h264 vid_files/im_0"+str(counter)+".mp4", shell=True)
 
+    # Is this necessary?
     time.sleep(2)
     print "here"
     cap = cv2.VideoCapture("vid_files/im_00.mp4")
@@ -54,15 +55,17 @@ if(True):
     while True:
         # Read image
         status, im = cap.read()
+        print "Status: " + str(status) + " of Frame #" + str(frame)
         
         #If we've run out of frames for that mp4...
-        if not status:
+        if not status or counter == 1:
             cap.release()
             red= f.read() #Get more frames!!
             w = io.open(str(counter)+'temp.h264','wb')
             w.write(red) 
             w.close()#-loglevel panic
             subprocess.call("ffmpeg -loglevel panic -y -i "+str(counter)+"temp.h264 im_0"+str(counter)+".mp4", shell=True)
+            # Is this necessary?
             time.sleep(1)
             cap = cv2.VideoCapture("im_0"+str(counter)+".mp4")
             counter+=1
