@@ -16,35 +16,40 @@ CMT = CMT.CMT()
 f =io.open('video.h264','rb')
 if(True):
     #Use some initial image for right now
-    im0 = cv2.imread('init.png')
-    im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
-    im_draw = np.copy(im0)
+    #im0 = cv2.imread('init.png')
+    #im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
+    #im_draw = np.copy(im0)
 
     #Just some initial box coordinates
-    tl = (450, 240)
-    br = (730, 400)
-    print 'using', tl, br, 'as init bb'
-
-    
-    CMT.initialise(im_gray0, tl, br)
-    
-    
+    #tl = (450, 240)
+    #br = (730, 400)
+    #print 'using', tl, br, 'as init bb'
     counter=0
-    frame = 1
-    
+
     #Here we read frames from f and write them to a temp file
     red= f.read()
     w = io.open(str(counter)+'temp.h264','wb')
     w.write(red) 
     w.close()#-loglevel panic
     
-    
     #This converts the h264 ti mp4
-    subprocess.call("ffmpeg -loglevel panic -y -i "+str(counter)+"temp.h264 im_0"+str(counter)+".mp4", shell=True)
+    subprocess.call("ffmpeg -loglevel panic -y -i "+str(counter)+"temp.h264 vid_files/im_0"+str(counter)+".mp4", shell=True)
+
+    time.sleep(2)
+    print "here"
+    cap = cv2.VideoCapture("vid_files/im_00.mp4")
+    print "here"
+    status, im0 = cap.read()
+    im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
+    im_draw = np.copy(im0)
+
+    (tl, br) = util.get_rect(im_draw)
+
+    CMT.initialise(im_gray0, tl, br)
+    
+    frame = 1
     
     #We always sleep between conversion and capture (do we need to?)
-    time.sleep(1)
-    cap = cv2.VideoCapture("im_0"+str(counter)+".mp4")
     counter+=1
     while True:
         # Read image
