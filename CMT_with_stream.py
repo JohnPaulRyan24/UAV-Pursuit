@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import argparse
+
 import cv2
-from numpy import empty, nan
-import os
-import sys
+
+
 import time
 import io
 import subprocess
@@ -15,30 +14,35 @@ import util
 
 CMT = CMT.CMT()
 f =io.open('video.h264','rb')
-
 if(True):
-  
-        # If no input path was specified, open camera device
-        
-    # Read first frame
+    #Use some initial image for right now
     im0 = cv2.imread('init.png')
     im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
     im_draw = np.copy(im0)
 
-    
+    #Just some initial box coordinates
     tl = (450, 240)
     br = (730, 400)
     print 'using', tl, br, 'as init bb'
 
-
+    
     CMT.initialise(im_gray0, tl, br)
+    
+    
     counter=0
     frame = 1
+    
+    #Here we read frames from f and write them to a temp file
     red= f.read()
     w = io.open(str(counter)+'temp.h264','wb')
     w.write(red) 
     w.close()#-loglevel panic
+    
+    
+    #This converts the h264 ti mp4
     subprocess.call("ffmpeg -loglevel panic -y -i "+str(counter)+"temp.h264 im_0"+str(counter)+".mp4", shell=True)
+    
+    #We always sleep between conversion and capture (do we need to?)
     time.sleep(1)
     cap = cv2.VideoCapture("im_0"+str(counter)+".mp4")
     counter+=1
@@ -46,12 +50,10 @@ if(True):
         # Read image
         status, im = cap.read()
         
-  
-  
-  
+        #If we've run out of frames for that mp4...
         if not status:
             cap.release()
-            red= f.read()
+            red= f.read() #Get more frames!!
             w = io.open(str(counter)+'temp.h264','wb')
             w.write(red) 
             w.close()#-loglevel panic
