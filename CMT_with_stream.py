@@ -60,6 +60,7 @@ n = 1;
 
 CMT = CMT.CMT()
 f =io.open('video.h264','rb')
+
 if(True):
 
     counter = 0
@@ -96,7 +97,9 @@ if(True):
         # Read image
         status, im = cap.read()
         print "Status: " + str(status) + " of Frame #" + str(frame)
-        
+        if(counter%10!=1):
+            counter+=1
+            continue
         #If we've run out of frames for that mp4...
         if not status or counter == 1:
             cap.release()
@@ -176,7 +179,13 @@ if(True):
         est_x2 = est_z[1];
         est_y1 = est_z[2];
         est_y2 = est_z[3];
-
+        center = est_x1/2.0+est_x2/2.0
+        if(center>330):
+            print "MOVE RIGHT"
+            g = open('file.txt','w')
+            g.write("1")
+            g.close()
+        #if(center)
         # draw a bounding box around the detected object
         imgname = 'output/output_' + number + '.png';
         img = cv2.imread(imgname, 1);
