@@ -2,7 +2,7 @@
 
 
 import cv2
-
+import argparse
 import os.path
 import time
 import io
@@ -32,6 +32,17 @@ def kalman_update(x,P,z,H,R):
     return res;
 
 # Set up CMT parsing/necessary for writing csv data
+
+parser = argparse.ArgumentParser(description='Track an object.')
+parser.add_argument('--output-dir', dest='output', help='Specify a directory for output data.')
+
+args = parser.parse_args()
+
+if args.output is not None:
+    if not os.path.exists(args.output):
+        os.mkdir(args.output)
+    elif not os.path.isdir(args.output):
+        raise Exception(args.output + ' exists, but is not a directory')
 
 # define the filter
 
@@ -71,7 +82,9 @@ if(True):
     im_gray0 = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
     im_draw = numpy.copy(im0)
 
-    (tl, br) = util.get_rect(im_draw)
+    tl, br = util.get_rect(im_draw)
+
+    print "t1: " + str(tl) + " br: " + str(br)
 
     CMT.initialise(im_gray0, tl, br)
     
@@ -106,6 +119,26 @@ if(True):
         toc = time.time()
 
         # Display results
+        # Draw updated estimate
+        if CMT.has_result:
+
+            cv2.line(im_draw, CMT.tl, CMT.tr, (255, 0, 0), 4)
+            cv2.line(im_draw, CMT.tr, CMT.br, (255, 0, 0), 4)
+            cv2.line(im_draw, CMT.br, CMT.bl, (255, 0, 0), 4)
+            cv2.line(im_draw, CMT.bl, CMT.tl, (255, 0, 0), 4)
+
+        util.draw_keypoints(CMT.tracked_keypoints, im_draw, (255, 255, 255))
+        # this is from simplescale
+        util.draw_keypoints(CMT.votes[:, :2], im_draw)  # blue
+        util.draw_keypoints(CMT.outliers[:, :2], im_draw, (0, 0, 255))
+
+        # Draw output image
+
+        cv2.imwrite('{0}/output_{1:08d}.png'.format(args.output, frame), im_draw)
+
+        with open('{0}/bbox_{1:08d}.csv'.format(args.output, frame), 'w') as z:
+            z.write('x y \n')
+            numpy.savetxt(z, numpy.array((CMT.tl, CMT.tr, CMT.br, CMT.bl, CMT.tl)), fmt='%.2f')
 
         # Draw Kalman Filter here instead
         number = '%08d'%(n);
@@ -156,18 +189,6 @@ if(True):
 
         n += 1;
 
-        # Draw updated estimate
-        #if CMT.has_result:
-
-        #    cv2.line(im_draw, CMT.tl, CMT.tr, (255, 0, 0), 4)
-        #    cv2.line(im_draw, CMT.tr, CMT.br, (255, 0, 0), 4)
-        #    cv2.line(im_draw, CMT.br, CMT.bl, (255, 0, 0), 4)
-        #    cv2.line(im_draw, CMT.bl, CMT.tl, (255, 0, 0), 4)
-
-        #util.draw_keypoints(CMT.tracked_keypoints, im_draw, (255, 255, 255))
-        # this is from simplescale
-        #util.draw_keypoints(CMT.votes[:, :2], im_draw)  # blue
-        #util.draw_keypoints(CMT.outliers[:, :2], im_draw, (0, 0, 255))
 
         #cv2.imshow('main', im_draw)
 
@@ -183,3 +204,4 @@ if(True):
         # Advance frame number
         frame += 1
 
+f.close()
